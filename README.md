@@ -110,11 +110,6 @@ root/
 
 Fikirlerinizi, önerilerinizi veya kod katkılarınızı bekliyoruz! Pull requestleriniz bizim için çok değerli. 💡✨
 
----
-
-## 📄 Lisans
-
-Bu proje **MIT Lisansı** ile lisanslanmıştır. Detaylar için lisans dosyasına bakabilirsiniz.
 
 ---
 
