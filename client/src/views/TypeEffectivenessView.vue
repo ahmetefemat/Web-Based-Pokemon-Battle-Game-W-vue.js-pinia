@@ -1,8 +1,10 @@
 <template>
   <div class="type-effectiveness-view">
+    <!-- Geri dönmek için buton -->
     <button class="back-button" @click="goBack">← Back</button>
     <h1>Pokémon Type Comparison</h1>
 
+    <!-- Pokémon seçimi için kartlar -->
     <div class="pokemon-selection">
       <div
         v-for="poke in pokemons"
@@ -10,6 +12,7 @@
         :class="['pokemon-card', isSelected(poke) ? 'selected' : '']"
         @click="selectPokemon(poke)"
       >
+        <!-- Pokémon resmi ve bilgileri -->
         <img :src="`/images/${poke.image}`" :alt="poke.name" />
         <div class="info">
           <p class="name">{{ poke.name }}</p>
@@ -18,7 +21,9 @@
       </div>
     </div>
 
+    <!-- Hem oyuncu hem düşman seçildiğinde karşılaştırma sonucu gösterilir -->
     <div v-if="player && enemy" class="comparison-result">
+      <!-- Oyuncu bilgileri -->
       <div class="pokemon-info">
         <img :src="`/images/${player.image}`" :alt="player.name" />
         <p class="name">{{ player.name }}</p>
@@ -27,12 +32,14 @@
 
       <div class="versus">VS</div>
 
+      <!-- Düşman bilgileri -->
       <div class="pokemon-info">
         <img :src="`/images/${enemy.image}`" :alt="enemy.name" />
         <p class="name">{{ enemy.name }}</p>
         <p class="type">{{ enemy.type }}</p>
       </div>
 
+      <!-- Etkinlik durumu metinleri -->
       <div class="matchup-text">
         <p :class="playerEffectivenessClass">{{ playerEffectivenessText }}</p>
         <p :class="enemyEffectivenessClass">{{ enemyEffectivenessText }}</p>
@@ -44,10 +51,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+// Geri gitme fonksiyonu
 function goBack() {
   window.history.back();
 }
 
+// Pokémon verileri (isim, tür ve resim)
 const pokemons = [
   { name: 'Bulbasaur', type: 'grass', image: 'bulbasaur.png' },
   { name: 'Charmander', type: 'fire', image: 'charmander.png' },
@@ -55,28 +64,37 @@ const pokemons = [
   { name: 'Pikachu', type: 'electric', image: 'pikachu.png' },
 ]
 
+// Seçilen oyuncu ve düşman Pokémon'ları
 const player = ref(null)
 const enemy = ref(null)
 
+// Pokémon seçme fonksiyonu
 function selectPokemon(poke) {
   if (!player.value) {
+    // Eğer oyuncu seçilmemişse, seçilen poke oyuncu olur
     player.value = poke
+    // Aynı Pokémon hem oyuncu hem düşman olmasın diye kontrol
     if (enemy.value && enemy.value.name === poke.name) {
       enemy.value = null
     }
   } else if (!enemy.value && poke.name !== player.value.name) {
+    // Eğer düşman seçilmemiş ve seçilen poke oyuncu değilse düşman olur
     enemy.value = poke
   } else if (poke.name === player.value.name) {
+    // Aynı oyuncuyu tekrar seçerse seçim iptal edilir
     player.value = null
   } else if (poke.name === enemy.value.name) {
+    // Aynı düşmanı tekrar seçerse seçim iptal edilir
     enemy.value = null
   }
 }
 
+// Bir Pokémon'un seçili olup olmadığını kontrol eden fonksiyon
 function isSelected(poke) {
   return (player.value && player.value.name === poke.name) || (enemy.value && enemy.value.name === poke.name)
 }
 
+// Türlerin güçlü ve zayıf oldukları türler tablosu
 const typeChart = {
   fire: { strongAgainst: ['grass'], weakAgainst: ['water', 'rock'] },
   water: { strongAgainst: ['fire', 'rock'], weakAgainst: ['grass', 'electric'] },
@@ -86,23 +104,27 @@ const typeChart = {
   bug: { strongAgainst: ['grass'], weakAgainst: ['fire', 'rock'] },
 }
 
+// Saldıran türüne göre savunana karşı etkinlik durumu hesaplama fonksiyonu
 function effectiveness(attackerType, defenderType) {
-  if (!typeChart[attackerType]) return 'Neutral'
-  if (typeChart[attackerType].strongAgainst.includes(defenderType)) return 'Strong'
-  if (typeChart[attackerType].weakAgainst.includes(defenderType)) return 'Weak'
-  return 'Neutral'
+  if (!typeChart[attackerType]) return 'Neutral' // Tür tablosunda yoksa nötr
+  if (typeChart[attackerType].strongAgainst.includes(defenderType)) return 'Strong' // Güçlü ise
+  if (typeChart[attackerType].weakAgainst.includes(defenderType)) return 'Weak' // Zayıf ise
+  return 'Neutral' // Diğer durumlar nötr
 }
 
+// Oyuncunun düşmana karşı etkinliği (computed, otomatik hesaplanır)
 const playerEffectiveness = computed(() => {
   if (!player.value || !enemy.value) return 'Neutral'
   return effectiveness(player.value.type, enemy.value.type)
 })
 
+// Düşmanın oyuncuya karşı etkinliği
 const enemyEffectiveness = computed(() => {
   if (!player.value || !enemy.value) return 'Neutral'
   return effectiveness(enemy.value.type, player.value.type)
 })
 
+// Oyuncu için açıklama metni
 const playerEffectivenessText = computed(() => {
   if (!player.value || !enemy.value) return ''
   switch (playerEffectiveness.value) {
@@ -115,6 +137,7 @@ const playerEffectivenessText = computed(() => {
   }
 })
 
+// Düşman için açıklama metni
 const enemyEffectivenessText = computed(() => {
   if (!player.value || !enemy.value) return ''
   switch (enemyEffectiveness.value) {
@@ -127,6 +150,7 @@ const enemyEffectivenessText = computed(() => {
   }
 })
 
+// Oyuncu etkinliğine göre CSS sınıfı
 const playerEffectivenessClass = computed(() => {
   return {
     Strong: 'strong',
@@ -135,6 +159,7 @@ const playerEffectivenessClass = computed(() => {
   }[playerEffectiveness.value] || 'neutral'
 })
 
+// Düşman etkinliğine göre CSS sınıfı
 const enemyEffectivenessClass = computed(() => {
   return {
     Strong: 'strong',
@@ -172,7 +197,7 @@ h1 {
   position: absolute;
   top: 20px;
   left: 20px;
- width: 200px;
+  width: 200px;
   padding: 14px 0;
   font-size: 18px;
   font-weight: 600;
@@ -343,7 +368,7 @@ h1 {
   text-shadow: none;
 }
 
-/* Responsive */
+/* Responsive tasarım ayarları */
 
 @media (max-width: 960px) {
   .pokemon-selection {
@@ -390,7 +415,55 @@ h1 {
     font-size: 1.8rem;
   }
   .matchup-text p {
-    font-size: 1.05rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .pokemon-selection {
+    flex-wrap: wrap;
+    gap: 14px;
+    max-width: 100%;
+    justify-content: center;
+    padding-bottom: 10px;
+  }
+  .pokemon-card {
+    width: 95px;
+    padding: 14px 6px 16px;
+  }
+  .pokemon-card img {
+    width: 75px;
+    height: 75px;
+  }
+  .pokemon-card .name {
+    font-size: 0.9rem;
+  }
+  .pokemon-card .type {
+    font-size: 0.7rem;
+  }
+  .comparison-result {
+    max-width: 95%;
+    padding: 1rem 1.2rem;
+    gap: 1.6rem;
+  }
+  .pokemon-info {
+    width: 110px;
+  }
+  .pokemon-info img {
+    width: 85px;
+    height: 85px;
+  }
+  .pokemon-info .name {
+    font-size: 1rem;
+  }
+  .pokemon-info .type {
+    font-size: 0.85rem;
+  }
+  .versus {
+    font-size: 1.4rem;
+  }
+  .matchup-text p {
+    font-size: 0.9rem;
   }
 }
 </style>

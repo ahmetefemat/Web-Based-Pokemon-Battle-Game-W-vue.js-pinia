@@ -2,9 +2,8 @@
   <div class="select-view">
     <h1>Choose Your Pokémon</h1>
     
-    <!-- Yeni eklenen buton -->
+    <!-- Type Effectiveness sayfasına yönlendiren buton -->
     <button class="type-btn" @click="goToTypeEffectiveness">Type Effectiveness</button>
-
 
     <div class="pokemon-list">
       <div
@@ -14,15 +13,17 @@
         :class="{ selected: selectedPlayer?.id === pokemon.id || selectedEnemy?.id === pokemon.id }"
         @click="selectPokemon(pokemon)"
       >
+        <!-- Pokémon görseli -->
         <img :src="`/images/${pokemon.image}`" :alt="pokemon.name" />
         <p>{{ pokemon.name }}</p>
         <small>{{ pokemon.type }}</small>
       </div>
     </div>
+
+    <!-- Savaş başlatma butonu, her iki Pokémon seçilmeden aktif olmaz -->
     <button @click="startBattle" :disabled="!selectedPlayer || !selectedEnemy">Start Battle</button>
   </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -30,17 +31,19 @@ import { useBattleStore } from '../store/battle'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-const pokemons = ref([])
-const selectedPlayer = ref(null)
-const selectedEnemy = ref(null)
+const pokemons = ref([])                // Tüm Pokémon verileri burada tutulur
+const selectedPlayer = ref(null)        // Oyuncunun seçtiği Pokémon
+const selectedEnemy = ref(null)         // Rakibin seçtiği Pokémon
 const store = useBattleStore()
 const router = useRouter()
 
+// API'den Pokémon verilerini çeker
 const fetchPokemons = async () => {
   const res = await axios.get('http://localhost:3000/api/pokemons')
   pokemons.value = res.data
 }
 
+// Pokémon seçim mantığı
 const selectPokemon = (pokemon) => {
   if (!selectedPlayer.value) {
     selectedPlayer.value = pokemon
@@ -53,20 +56,23 @@ const selectPokemon = (pokemon) => {
   }
 }
 
+// Savaşı başlatır ve seçilen Pokémonları store'a aktarır
 const startBattle = () => {
   store.setPlayers(selectedPlayer.value, selectedEnemy.value)
   router.push('/battle')
 }
 
-// Yeni fonksiyon: butonla yönlendirme
+// Type Effectiveness sayfasına yönlendirir
 const goToTypeEffectiveness = () => {
   router.push('/type-effectiveness')
 }
 
+// Bileşen yüklendiğinde Pokémon verilerini çeker
 onMounted(fetchPokemons)
 </script>
 
 <style scoped>
+/* Görsel tasarım ve genel stil ayarları */
 .select-view {
   min-height: 100vh;
   background-color: #121212;
@@ -170,6 +176,7 @@ button:hover:not(:disabled) {
   box-shadow: 0 8px 22px rgba(37, 99, 235, 0.7);
 }
 
+/* Type Effectiveness yönlendirme butonu */
 .type-btn {
   position: fixed;
   left: 20px;
